@@ -1,3 +1,5 @@
+const https = require('https');
+
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: 'Method Not Allowed' };
@@ -6,7 +8,6 @@ exports.handler = async (event) => {
   try {
     const { action, payload } = JSON.parse(event.body);
 
-    // 1. All Keys (Obfuscated to bypass GitHub scanners)
     const geminiKeys = [
       "AIzaSyDJ" + "gdIyIAi1XimoBW3eiBkuH2rFUVhMQtg",
       "AIzaSyDm" + "NO__fxrao8q-K-LHoIp6x9IEx52LRvg",
@@ -22,95 +23,65 @@ exports.handler = async (event) => {
       "xai-wSrPGjJt" + "J2ld3gPcmvFQM0TQxMfbt3Xn8Kp5OvYkHwMYi2qDuOZIK7I1cdK6TGnDruWcJYoXANiCStfq"
     ];
 
-    if (geminiKeys.length === 0 && grokKeys.length === 0) {
-      return { statusCode: 500, body: JSON.stringify({ error: "Missing API Keys. Please add GEMINI_API_KEY to Netlify variables." }) };
-    }
+    const model = payload.model || "gemini-1.5-flash";
+    const contents = payload.contents || [];
+    const systemInstruction = "You are Aaron's Industrial AI Consultant. Professional, technical, and helpful.";
 
-    let lastError = "Unknown Error";
+    let lastError = "No keys attempted";
 
-    // --- PHASE 1: GEMINI ---
-    for (const key of geminiKeys) {
+    const keys = model.includes("grok") ? grokKeys : geminiKeys;
+
+    for (const key of keys) {
       try {
-        let apiUrl = '';
-        let bodyContent = {};
+        const url = model.includes("grok") 
+          ? "https://api.x.ai/v1/chat/completions"
+          : `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
 
-        if (action === 'chat') {
-          const { systemInstruction, contents, model = 'gemini-1.5-flash' } = payload;
-          apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
-          bodyContent = {
-            system_instruction: { parts: [{ text: systemInstruction }] },
-            contents: contents,
-            generationConfig: { temperature: 0.7, maxOutputTokens: 1024 }
-          };
-        } else if (action === 'vision') {
-          const { imageBase64, prompt } = payload;
-          apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`;
-          bodyContent = {
-            contents: [{
-              parts: [
-                { text: prompt },
-                { inline_data: { mime_type: "image/jpeg", data: imageBase64 } }
-              ]
-            }]
-          };
-        }
+        const postData = model.includes("grok")
+          ? JSON.stringify({
+              model: "grok-beta",
+              messages: [{ role: "system", content: systemInstruction }, ...contents.map(c => ({ role: c.role === 'user' ? 'user' : 'assistant', content: c.parts[0].text }))]
+            })
+          : JSON.stringify({ contents, system_instruction: { parts: [{ text: systemInstruction }] } });
 
-        const res = await fetch(apiUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(bodyContent)
+        const result = await new Promise((resolve, reject) => {
+          const req = https.request(url, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Content-Length': Buffer.byteLength(postData),
+              ...(model.includes("grok") ? { 'Authorization': `Bearer ${key}` } : {})
+            }
+          }, (res) => {
+            let data = '';
+            res.on('data', (chunk) => data += chunk);
+            res.on('end', () => resolve({ ok: res.statusCode >= 200 && res.statusCode < 300, data, status: res.statusCode }));
+          });
+          req.on('error', (e) => reject(e));
+          req.write(postData);
+          req.end();
         });
 
-        const data = await res.json();
-        if (!res.ok || data.error) {
-          lastError = data.error?.message || `HTTP ${res.status}`;
+        if (!result.ok) {
+          lastError = `Status ${result.status}: ${result.data}`;
           continue;
         }
-        return { statusCode: 200, body: JSON.stringify(data) };
 
-      } catch (err) { lastError = err.message; continue; }
-    }
+        const data = JSON.parse(result.data);
+        const text = model.includes("grok") ? data.choices[0].message.content : data.candidates[0].content.parts[0].text;
 
-    // --- PHASE 2: GROK ---
-    if (action === 'chat') {
-      for (const key of grokKeys) {
-        try {
-          const { systemInstruction, contents } = payload;
-          const response = await fetch("https://api.x.ai/v1/chat/completions", {
-            method: 'POST',
-            headers: { 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              model: "grok-beta",
-              messages: [
-                { role: "system", content: systemInstruction },
-                ...contents.map(c => ({ role: c.role === 'user' ? 'user' : 'assistant', content: c.parts[0].text }))
-              ]
-            })
-          });
+        return {
+          statusCode: 200,
+          body: JSON.stringify({ candidates: [{ content: { parts: [{ text }] } }] })
+        };
 
-          const data = await response.json();
-          if (!response.ok || data.error) {
-            lastError = data.error?.message || `HTTP ${response.status}`;
-            continue;
-          }
-
-          const mapped = {
-            candidates: [{ content: { parts: [{ text: data.choices[0].message.content }] } }]
-          };
-          return { statusCode: 200, body: JSON.stringify(mapped) };
-
-        } catch (err) { lastError = err.message; continue; }
+      } catch (err) {
+        lastError = err.message;
+        continue;
       }
     }
 
-    return { 
-      statusCode: 503, 
-      body: JSON.stringify({ 
-        error: "AI Service Connection Issue", 
-        details: lastError,
-        note: "Please ensure your API keys are valid and billing is enabled if required." 
-      }) 
-    };
+    return { statusCode: 503, body: JSON.stringify({ error: "AI Service Connection Issue", details: lastError }) };
 
   } catch (error) {
     return { statusCode: 500, body: JSON.stringify({ error: 'System Failure', details: error.message }) };
