@@ -32,6 +32,11 @@ function initializeDashboard() {
     loadAIKnowledgeFromDB();
 }
 
+function loadAIKnowledgeFromDB() {
+    console.log("Aaron Air Care: Loading AI Strategy Knowledge...");
+    // Future: Fetch custom industrial prompt instructions from Firestore
+}
+
 // 1. AUTHENTICATION (RECOVERY & STABILITY MODE)
 async function sendEmailOTP() {
     const emailInput = document.getElementById('admin-email');

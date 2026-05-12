@@ -103,7 +103,14 @@ exports.handler = async (event) => {
       }
     }
 
-    return { statusCode: 503, body: JSON.stringify({ error: "AI service issue. Check keys.", details: lastError }) };
+    return { 
+      statusCode: 503, 
+      body: JSON.stringify({ 
+        error: "AI Service Connection Issue", 
+        details: lastError,
+        note: "Please ensure your API keys are valid and billing is enabled if required." 
+      }) 
+    };
 
   } catch (error) {
     return { statusCode: 500, body: JSON.stringify({ error: 'System Failure', details: error.message }) };
