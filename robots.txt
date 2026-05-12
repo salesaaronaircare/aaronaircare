@@ -1,0 +1,7 @@
+User-agent: *
+Disallow: /admin.html
+Disallow: /admin
+Disallow: /functions/
+Allow: /
+
+Sitemap: https://aaronaircare.in/sitemap.xml
