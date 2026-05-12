@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta http-equiv="Content-Security-Policy"
-    content="default-src 'self' https: 'unsafe-inline' 'unsafe-eval'; img-src 'self' https: data:; font-src 'self' https: data:;">
+    content="default-src 'self' https: 'unsafe-inline' 'unsafe-eval' data:; connect-src 'self' https:; img-src 'self' data: https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline' https:;">
   <meta name="description"
     content="Aaron Air Care Engineering: Your trusted partner for Industrial HVAC. Specializing in AHU Manufacturing, Ventilation Systems, and Turnkey Engineering Solutions across India." />
   <meta name="keywords"
@@ -939,7 +939,9 @@
               <input type="text" id="reviewCompany" placeholder="Your company name" autocomplete="organization" />
             </div>
             <div class="form-group">
-              <p style="font-weight: 600; margin-bottom: 8px; font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase;">Rating <span class="required">*</span></p>
+              <p
+                style="font-weight: 600; margin-bottom: 8px; font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase;">
+                Rating <span class="required">*</span></p>
               <div class="star-rating">
                 <input type="radio" id="star5" name="rating" value="5" required />
                 <label for="star5" title="5 stars">⭐</label>
@@ -955,7 +957,8 @@
             </div>
             <div class="form-group full">
               <label for="reviewText">Your Review <span class="required">*</span></label>
-              <textarea id="reviewText" placeholder="Share your experience with our services..." required autocomplete="off"></textarea>
+              <textarea id="reviewText" placeholder="Share your experience with our services..." required
+                autocomplete="off"></textarea>
             </div>
           </div>
           <div class="form-submit">
@@ -978,7 +981,8 @@
           </div>
         </div>
         <div style="text-align: center; margin-top: 25px;">
-          <a href="https://jsdl.in/DT-99U1R1Z4HRG" target="_blank" class="btn-submit" style="text-decoration: none; display: inline-flex; width: auto; padding: 10px 25px; font-size: 0.85rem;">
+          <a href="https://jsdl.in/DT-99U1R1Z4HRG" target="_blank" class="btn-submit"
+            style="text-decoration: none; display: inline-flex; width: auto; padding: 10px 25px; font-size: 0.85rem;">
             Review us on Justdial
           </a>
         </div>
@@ -1369,8 +1373,8 @@
               class="social-btn" aria-label="IndiaMART" title="IndiaMART Profile">
               <span style="font-weight: 900; font-size: 13px; font-family: 'Montserrat', sans-serif;">IM</span>
             </a>
-            <a href="https://jsdl.in/DT-99U1R1Z4HRG" target="_blank" rel="noopener noreferrer"
-              class="social-btn" aria-label="Justdial" title="Justdial Profile">
+            <a href="https://jsdl.in/DT-99U1R1Z4HRG" target="_blank" rel="noopener noreferrer" class="social-btn"
+              aria-label="Justdial" title="Justdial Profile">
               <span style="font-weight: 900; font-size: 13px; font-family: 'Montserrat', sans-serif;">JD</span>
             </a>
           </div>
@@ -1398,7 +1402,8 @@
             <li><a href="#services">› Our Services</a></li>
             <li><a href="#projects">› Projects</a></li>
             <li><a href="#contact">› Contact</a></li>
-            <li><a href="https://www.indiamart.com/aaron-aircare-engineering/" target="_blank" rel="noopener">› IndiaMART Profile</a></li>
+            <li><a href="https://www.indiamart.com/aaron-aircare-engineering/" target="_blank" rel="noopener">›
+                IndiaMART Profile</a></li>
             <li><a href="https://jsdl.in/DT-99U1R1Z4HRG" target="_blank" rel="noopener">› Justdial Profile</a></li>
           </ul>
         </div>
@@ -1406,21 +1411,29 @@
       </div>
 
       <div class="footer-bottom" style="padding: 20px 0 10px; border-top: 1px solid var(--border); margin-top: 20px;">
-        <div class="footer-bottom-flex" style="display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; width: 100%; max-width: 1200px; margin: 0 auto;">
-          
-          <p class="footer-copy" style="font-size: 0.85rem; color: var(--text-primary); opacity: 0.8; margin: 0;">&copy; 2026 Aaron Air Care Engineering. All Rights Reserved.</p>
-          
-          <div class="footer-links" style="display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; font-size: 0.8rem;">
-            <a href="privacy-policy.html" style="color: var(--text-muted); text-decoration: none; transition: var(--transition);">Privacy Policy</a>
-            <a href="terms-of-service.html" style="color: var(--text-muted); text-decoration: none; transition: var(--transition);">Terms of Service</a>
-            <a href="sitemap.html" style="color: var(--text-muted); text-decoration: none; transition: var(--transition);">Sitemap</a>
+        <div class="footer-bottom-flex"
+          style="display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; width: 100%; max-width: 1200px; margin: 0 auto;">
+
+          <p class="footer-copy" style="font-size: 0.85rem; color: var(--text-primary); opacity: 0.8; margin: 0;">&copy;
+            2026 Aaron Air Care Engineering. All Rights Reserved.</p>
+
+          <div class="footer-links"
+            style="display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; font-size: 0.8rem;">
+            <a href="privacy-policy.html"
+              style="color: var(--text-muted); text-decoration: none; transition: var(--transition);">Privacy Policy</a>
+            <a href="terms-of-service.html"
+              style="color: var(--text-muted); text-decoration: none; transition: var(--transition);">Terms of
+              Service</a>
+            <a href="sitemap.html"
+              style="color: var(--text-muted); text-decoration: none; transition: var(--transition);">Sitemap</a>
           </div>
 
-          <div class="developed-by" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 5px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px; width: 180px;">
-            Developed by 
-            <a href="https://www.instagram.com/webbysharik?igsh=MW8yM2VxZnp1ZjliYg==" target="_blank" rel="noopener" 
-               style="color: var(--accent); text-decoration: none; font-weight: 700; font-size: 0.85rem;">
-               Webby Sharik 🚀
+          <div class="developed-by"
+            style="font-size: 0.75rem; color: var(--text-muted); margin-top: 5px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px; width: 180px;">
+            Developed by
+            <a href="https://www.instagram.com/webbysharik?igsh=MW8yM2VxZnp1ZjliYg==" target="_blank" rel="noopener"
+              style="color: var(--accent); text-decoration: none; font-weight: 700; font-size: 0.85rem;">
+              Webby Sharik 🚀
             </a>
           </div>
         </div>
