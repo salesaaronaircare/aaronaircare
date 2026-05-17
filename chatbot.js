@@ -1,85 +1,103 @@
-// Aaron Air Care - Client-Side Industrial AI Assistant
+// Aaron Air Care - Ultimate Hybrid AI Assistant - V8 (GROK ENGINE LOCK)
+console.log("Chatbot.js: V8 Loading...");
+
 const GEMINI_KEYS = [
-    "AIzaSyDJgdIyIAi1XimoBW3eiBkuH2rFUVhMQtg",
-    "AIzaSyDmNO__fxrao8q-K-LHoIp6x9IEx52LRvg",
-    "AIzaSyDaAEDWxCMF-BXsdm3LDP0Qt-en-RR3ZNE",
-    "AIzaSyCTQfWHB5bkzgwJyPE2Xzha8jLy4cXRg1A"
+    "YOUR_GEMINI_API_KEY_1",
+    "YOUR_GEMINI_API_KEY_2"
 ];
 
-const SYSTEM_PROMPT = "You are Aaron's Industrial AI Consultant. Professional, technical, and helpful. You specialize in HVAC, AHU, and industrial ventilation.";
+const GROK_KEYS = [
+    "YOUR_GROK_API_KEY_1",
+    "YOUR_GROK_API_KEY_2",
+    "YOUR_GROK_API_KEY_3",
+    "YOUR_GROK_API_KEY_4"
+];
 
-async function sendBotMessage(userText, history = []) {
-    let lastError = "";
+const SYSTEM_PROMPT = "You are Aaron's Technical HVAC Assistant. Expert in AHU and Industrial Ventilation.";
 
-    // Convert history for Gemini
-    const contents = history.map(h => ({
-        role: h.role === 'user' ? 'user' : 'model',
-        parts: [{ text: h.text }]
-    }));
-    contents.push({ role: 'user', parts: [{ text: userText }] });
+const chatMessages = document.getElementById('chatbot-messages');
+const chatInput = document.getElementById('bot-input');
+const typingIndicator = document.getElementById('bot-typing');
+const chatWindow = document.getElementById('chatbot-window');
 
-    for (const key of GEMINI_KEYS) {
-        try {
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`;
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents,
-                    system_instruction: { parts: [{ text: SYSTEM_PROMPT }] }
-                })
-            });
-
-            const data = await response.json();
-            if (response.ok && data.candidates && data.candidates[0].content.parts[0].text) {
-                return data.candidates[0].content.parts[0].text;
-            }
-            lastError = data.error?.message || "Unknown API Error";
-        } catch (err) {
-            lastError = err.message;
-        }
+window.toggleChatbot = function () {
+    if (chatWindow) {
+        chatWindow.classList.toggle('active');
+        chatWindow.style.display = chatWindow.classList.contains('active') ? 'flex' : 'none';
     }
-    throw new Error(lastError || "All AI keys failed.");
-}
+};
 
-// UI Integration
-const chatInput = document.getElementById('chat-input');
-const sendBtn = document.getElementById('send-btn');
-const chatMessages = document.getElementById('chat-messages');
-
-let chatHistory = [];
-
-async function handleChat() {
+window.sendBotMessage = async function () {
     const text = chatInput.value.trim();
     if (!text) return;
-
-    // Add User Message
     appendMessage('user', text);
     chatInput.value = '';
-
-    // Add Thinking
-    const thinkingId = 'thinking-' + Date.now();
-    appendMessage('ai', 'Thinking...', thinkingId);
+    if (typingIndicator) typingIndicator.style.display = 'flex';
+    chatMessages.scrollTop = chatMessages.scrollHeight;
 
     try {
-        const aiResponse = await sendBotMessage(text, chatHistory);
-        document.getElementById(thinkingId).innerText = aiResponse;
-        chatHistory.push({ role: 'user', text: text });
-        chatHistory.push({ role: 'ai', text: aiResponse });
+        const response = await getAIResponse(text);
+        if (typingIndicator) typingIndicator.style.display = 'none';
+        appendMessage('ai', response);
     } catch (err) {
-        document.getElementById(thinkingId).innerText = "Temporary AI service issue. Please call us for assistance.";
-        console.error("AI Error:", err);
+        if (typingIndicator) typingIndicator.style.display = 'none';
+        appendMessage('ai', "Technical service temporarily unavailable. Please call +91 70782 84202.");
+        console.error("CRITICAL AI FAILURE:", err);
     }
+};
+
+async function getAIResponse(userText) {
+    // 1. GEMINI ATTEMPT (v1beta + Multiple Models)
+    for (const key of GEMINI_KEYS) {
+        const mods = ["gemini-1.5-flash", "gemini-pro"];
+        for (const mod of mods) {
+            try {
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/${mod}:generateContent?key=${key}`;
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: `${SYSTEM_PROMPT}\n\nUser: ${userText}` }] }] })
+                });
+                const data = await res.json();
+                if (res.ok && data.candidates?.[0]?.content?.parts?.[0]?.text) return data.candidates[0].content.parts[0].text;
+            } catch (e) { }
+        }
+    }
+
+    // 2. GROK ATTEMPT (grok-2 Model Rotation)
+    console.log("Switching to Grok-2 Engine...");
+    for (const key of GROK_KEYS) {
+        const grokModels = ["grok-2", "grok-2-1212", "grok-beta"];
+        for (const mod of grokModels) {
+            try {
+                const res = await fetch("https://api.x.ai/v1/chat/completions", {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
+                    body: JSON.stringify({
+                        model: mod,
+                        messages: [{ role: "user", content: `${SYSTEM_PROMPT}\n\nQuestion: ${userText}` }],
+                        stream: false
+                    })
+                });
+                const data = await res.json();
+                if (res.ok && data.choices?.[0]?.message?.content) return data.choices[0].message.content;
+                else console.log(`Grok ${mod} Error:`, data.error?.message || "Unknown");
+            } catch (e) { }
+        }
+    }
+    throw new Error("All AI Engines Failed.");
 }
 
-function appendMessage(role, text, id = null) {
-    const msgDiv = document.createElement('div');
-    msgDiv.className = `message ${role}-message`;
-    if (id) msgDiv.id = id;
-    msgDiv.innerText = text;
-    chatMessages.appendChild(msgDiv);
+function appendMessage(role, text) {
+    const div = document.createElement('div');
+    div.className = role === 'user' ? 'user-msg' : 'ai-msg';
+    div.innerHTML = text.replace(/\n/g, '<br>');
+    chatMessages.appendChild(div);
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
-sendBtn.addEventListener('click', handleChat);
-chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleChat(); });
+const aiChatBtn = document.getElementById('aiChatBtn');
+if (aiChatBtn) aiChatBtn.addEventListener('click', window.toggleChatbot);
+
+window.botQuickAction = (action) => { chatInput.value = `Tell me about your ${action}`; window.sendBotMessage(); };
+window.startNewChat = () => { chatMessages.innerHTML = `<div class="ai-msg">Welcome. How can I help with your HVAC project?</div>`; };
