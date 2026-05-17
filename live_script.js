@@ -241,33 +241,6 @@ async function displayReviews() {
     if (!reviewsList) return;
 
     try {
-        // Force reset reviews once for the new authentic ones
-        if (!localStorage.getItem('reviews_reset_v2')) {
-            try {
-                const allReviews = await db.collection("reviews").get();
-                const batch = db.batch();
-                allReviews.forEach(doc => batch.delete(doc.ref));
-                
-                const seedReviews = [
-                    { name: "Sanjay Yadav", company: "Textile Mill, Panipat", text: "good work done for ducting and exhaust. team was late by 2 days but work is ok.", rating: 3, date: "2026-04-18", status: "approved" },
-                    { name: "Vinay R.", company: "Factory Owner", text: "Quality AHU provided for our factory. Working fine till now.", rating: 4, date: "2026-05-02", status: "approved" },
-                    { name: "Rishabh", company: "Noida", text: "Material used is heavy duty. Price is slightly higher side but acceptable.", rating: 4, date: "2026-04-28", status: "approved" },
-                    { name: "Tariq", company: "Moradabad", text: "system commissioned last month. facing minor vibration issue in one blower, their technician came next day and fixed it. good service.", rating: 4, date: "2026-05-12", status: "approved" },
-                    { name: "Amit S.", company: "Pharma unit Baddi", text: "Service is fast. They installed clean room ahu in our plant. Satisfied with cooling and quality.", rating: 5, date: "2026-05-15", status: "approved" }
-                ];
-                
-                for (let r of seedReviews) {
-                    batch.set(db.collection("reviews").doc(), r);
-                }
-                await batch.commit();
-                localStorage.setItem('reviews_reset_v2', 'true');
-                location.reload();
-                return;
-            } catch (error) {
-                console.error("Reset failed", error);
-            }
-        }
-
         // Fetch only APPROVED reviews from Firestore
         const snap = await db.collection("reviews").where("status", "==", "approved").orderBy("date", "desc").get();
         
@@ -594,62 +567,3 @@ window.addEventListener('error', (e) => {
 
 // ===== PRODUCTION READY =====
 console.log('%c✅ Aaron Air Care Engineering - Website Live & Optimized', 'font-size: 14px; color: #10b981;');
-
-// ===== DYNAMIC CMS CONTENT LOADING =====
-async function loadDynamicContent() {
-    try {
-        // Load Hero Stats
-        const heroDoc = await db.collection('settings').doc('hero_stats').get();
-        if (heroDoc.exists) {
-            const data = heroDoc.data();
-            const heroTitle = document.querySelector('.hero-content h1');
-            const heroSub = document.querySelector('.hero-content .subtitle');
-            
-            if (heroTitle && data.heroTitle) heroTitle.innerHTML = data.heroTitle;
-            if (heroSub && data.heroSubtitle) heroSub.innerHTML = data.heroSubtitle;
-
-            // Update stats if elements exist (requires data-target attributes to be updated)
-            const statNumbers = document.querySelectorAll('.stat-number');
-            if (statNumbers.length >= 3) {
-                if (data.statYears) statNumbers[0].setAttribute('data-target', data.statYears);
-                if (data.statProjects) statNumbers[1].setAttribute('data-target', data.statProjects);
-                if (data.statCustomers) statNumbers[2].setAttribute('data-target', data.statCustomers);
-            }
-        }
-
-        // Load About Content
-        const aboutDoc = await db.collection('settings').doc('about_content').get();
-        if (aboutDoc.exists) {
-            const data = aboutDoc.data();
-            const aboutSection = document.getElementById('about');
-            
-            if (aboutSection) {
-                const heading = aboutSection.querySelector('.section-title');
-                const paragraphs = aboutSection.querySelectorAll('.about-content p');
-                const featureContainer = aboutSection.querySelector('.about-features');
-
-                if (heading && data.heading) heading.innerHTML = data.heading;
-                if (paragraphs.length >= 2) {
-                    if (data.p1) paragraphs[0].innerHTML = data.p1;
-                    if (data.p2) paragraphs[1].innerHTML = data.p2;
-                }
-                
-                if (featureContainer && data.features) {
-                    const featureList = data.features.split(',').map(f => f.trim()).filter(f => f);
-                    if (featureList.length > 0) {
-                        featureContainer.innerHTML = featureList.map(f => `
-                            <div class="about-feature-item">
-                                <div class="check">✓</div>
-                                <span>${escapeHtml(f)}</span>
-                            </div>
-                        `).join('');
-                    }
-                }
-            }
-        }
-    } catch (e) {
-        console.error("CMS Load Error:", e);
-    }
-}
-
-document.addEventListener('DOMContentLoaded', loadDynamicContent);

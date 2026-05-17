@@ -1,7 +1,7 @@
 User-agent: *
+Allow: /
 Disallow: /admin.html
 Disallow: /admin
-Disallow: /functions/
-Allow: /
+Disallow: /firebase-config.js
 
 Sitemap: https://aaronaircare.in/sitemap.xml

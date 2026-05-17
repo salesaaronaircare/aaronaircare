@@ -1,8 +1,19 @@
-[build]
-  publish = "."
-  functions = "functions"
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "geolocation=(), microphone=(), camera=()"
 
 [[redirects]]
   from = "/admin"
   to = "/admin.html"
   status = 200
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 404
